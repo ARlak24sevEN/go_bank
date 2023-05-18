@@ -1,10 +1,11 @@
 package service
 
 import (
+	"bank/errs"
+	"bank/logs"
 	"bank/repository"
 	"database/sql"
-	"errors"
-	"log"
+	"net/http"
 )
 
 type customerService struct {
@@ -18,7 +19,8 @@ func NewCustomerService(custRepo repository.CustomerRepository) CustomerService 
 func (s customerService) GetCustomers() ([]CustomerResponse, error) {
 	customers, err := s.custRepo.GetAll()
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
+		logs.Error(err)
 		return nil, err
 	}
 	custResponses := []CustomerResponse{}
@@ -35,10 +37,17 @@ func (s customerService) GetCustomer(id int) (*CustomerResponse, error) {
 	customer, err := s.custRepo.GetById(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("customer not found ")
+			return nil, errs.AppError{
+				Code:    http.StatusNotFound,
+				Message: "customer not found ",
+			}
 		}
-		log.Println(err)
-		return nil, err
+		// log.Println(err)
+		logs.Error(err)
+		return nil, errs.AppError{
+			Code:    http.StatusInternalServerError,
+			Message: "unexpected error",
+		}
 	}
 	custResponse := CustomerResponse{
 		CustomerID: customer.CustomerID, Name: customer.Name, Status: customer.Status,
