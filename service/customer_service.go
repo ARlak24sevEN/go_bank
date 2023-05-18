@@ -5,7 +5,6 @@ import (
 	"bank/logs"
 	"bank/repository"
 	"database/sql"
-	"net/http"
 )
 
 type customerService struct {
@@ -21,7 +20,7 @@ func (s customerService) GetCustomers() ([]CustomerResponse, error) {
 	if err != nil {
 		// log.Println(err)
 		logs.Error(err)
-		return nil, err
+		return nil, errs.NewUnexpectedError()
 	}
 	custResponses := []CustomerResponse{}
 	for _, customer := range customers {
@@ -37,17 +36,11 @@ func (s customerService) GetCustomer(id int) (*CustomerResponse, error) {
 	customer, err := s.custRepo.GetById(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errs.AppError{
-				Code:    http.StatusNotFound,
-				Message: "customer not found ",
-			}
+			return nil, errs.NewNotFoundError("customer not found")
 		}
 		// log.Println(err)
 		logs.Error(err)
-		return nil, errs.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: "unexpected error",
-		}
+		return nil, errs.NewUnexpectedError()
 	}
 	custResponse := CustomerResponse{
 		CustomerID: customer.CustomerID, Name: customer.Name, Status: customer.Status,
