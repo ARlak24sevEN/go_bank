@@ -21,16 +21,24 @@ func main() {
 	initTimeZone()
 	db := initDatabase()
 
+	// customerRepositoryMock := repository.NewCustomerRepositoryMock()
+	// _ = customerRepositoryDB
+	// _ = customerRepositoryMock
 	customerRepositoryDB := repository.NewCustomerRepositoryDb(db)
-	customerRepositoryMock := repository.NewCustomerRepositoryMock()
-	_ = customerRepositoryDB
-	_ = customerRepositoryMock
 	customerService := service.NewCustomerService(customerRepositoryDB)
 	customerHandler := handler.NewCustomerHandler(customerService)
+
+	accountRespositoryDB := repository.NewAccountRepositoryDb(db)
+	accountService := service.NewAccountService(accountRespositoryDB)
+	accountHandler := handler.NewAccountHandler(accountService)
+
 	router := mux.NewRouter()
 
 	router.HandleFunc("/customers", customerHandler.GetCustomers).Methods(http.MethodGet)
 	router.HandleFunc("/customers/{customerID:[0-9]+}", customerHandler.GetCustomer).Methods(http.MethodGet)
+
+	router.HandleFunc("/customers/{customerID:[0-9]+}/accounts", accountHandler.GetAccounts).Methods(http.MethodGet)
+	router.HandleFunc("/customers/{customerID:[0-9]+}/accounts", accountHandler.NewAccount).Methods(http.MethodPost)
 
 	// log.Printf("Banking service started at port %v", viper.GetInt("app.port"))
 	logs.Info("Banking service started at port " + viper.GetString("app.port"))
