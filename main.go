@@ -13,6 +13,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 )
 
@@ -87,11 +88,19 @@ func initTimeZone() {
 }
 
 func initDatabase() *sqlx.DB {
-	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
-		viper.GetString("db.username"),
-		viper.GetString("db.password"),
+	// dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
+	// 	viper.GetString("db.username"),
+	// 	viper.GetString("db.password"),
+	// 	viper.GetString("db.host"),
+	// 	viper.GetInt("db.port"),
+	// 	viper.GetString("db.database"),
+	// )
+
+	dsn := fmt.Sprintf("host= %s port = %d user = %s password = %s dbname = %s sslmode=disable",
 		viper.GetString("db.host"),
 		viper.GetInt("db.port"),
+		viper.GetString("db.username"),
+		viper.GetString("db.password"),
 		viper.GetString("db.database"),
 	)
 	//  db, err := sqlx.Open("mysql", "root:admin123@tcp(127.0.0.1:3306)/bank")
